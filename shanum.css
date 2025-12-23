@@ -500,7 +500,7 @@ html {
 .polaroid-frame-full {
   display: inline-block;
   background-color: white;
-  padding: 30px 30px 80px;
+  padding: 30px 30px 20px;
   border-radius: 2px;
   transform: rotate(2deg);
   box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.4);
@@ -2327,6 +2327,58 @@ section {
   .polaroid-frame {
     width: 280px;
     height: 320px;
+  }
+
+  /* Pastikan selector yang spesifik */
+  .polaroid-frame-full img.captured-photo,
+  .polaroid-frame-full #captured-photo,
+  #polaroid-frame-full img.captured-photo,
+  #captured-photo.captured-photo {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 250px !important;
+    max-height: 250px !important;
+    object-fit: cover !important;
+  }
+
+  /* Perbaiki container polaroid */
+  .polaroid-frame-full {
+    width: 90% !important;
+    max-width: 300px !important;
+    padding: 20px 20px 60px !important;
+    margin: 0 auto !important;
+  }
+
+  /* Perbaiki simulator camera */
+  .camera-simulator {
+    width: 95% !important;
+    padding: 20px 15px !important;
+  }
+
+  .camera-body {
+    padding: 20px !important;
+  }
+
+  #sticker-3 {
+    display: none;
+  }
+
+  /* Fix khusus untuk 578px dan 576px */
+  .wishes-wall {
+    grid-template-columns: 1fr !important; /* Ubah jadi 1 kolom di mobile */
+    gap: 10px !important;
+  }
+
+  .wish-item {
+    padding: 12px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .birthday-wishes {
+    padding: 20px 15px !important;
+    overflow: hidden !important;
   }
 
   .main-heading {
