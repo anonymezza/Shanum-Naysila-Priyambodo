@@ -46,14 +46,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isPlaying) {
       bgMusic.pause();
       musicIcon.classList.remove("fa-pause");
-      musicIcon.classList.add("fa-music");
+      musicIcon.classList.add("fa-solid fa-play");
       musicPlayer.classList.remove("playing");
     } else {
       bgMusic.play().catch((e) => {
         console.log("Autoplay prevented. User interaction required.");
         alert("Klik tombol musik untuk memutar lagu latar.");
       });
-      musicIcon.classList.remove("fa-music");
+      musicIcon.classList.remove("fa-solid fa-play");
       musicIcon.classList.add("fa-pause");
       musicPlayer.classList.add("playing");
     }
@@ -1226,7 +1226,7 @@ function setupMusicPlayer() {
   playPauseBtn.addEventListener("click", () => {
     if (isPlaying) {
       audioPlayer.pause();
-      playPauseBtn.innerHTML = '<i class="fas fa-music"></i>';
+      playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
       vinylRecord.classList.remove("playing");
     } else {
       audioPlayer.play().catch((e) => {
@@ -1679,49 +1679,6 @@ function setupSharing() {
     copyInstagramCaptionBtn.addEventListener("click", copyInstagramCaption);
   }
 
-  function generateShareImage() {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = 1200;
-    canvas.height = 630;
-
-    // Background gradient
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    gradient.addColorStop(0, "#ff8787");
-    gradient.addColorStop(1, "#e26868");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Add title
-    ctx.fillStyle = "white";
-    ctx.font = 'bold 70px "Dancing Script", cursive';
-    ctx.textAlign = "center";
-    ctx.fillText("Kenangan Indah untuk Shanum", canvas.width / 2, 150);
-
-    // Add subtitle
-    ctx.font = '40px "Caveat", cursive';
-    ctx.fillText("Kumpulan kenangan dan pesan spesial", canvas.width / 2, 250);
-
-    // Add URL
-    ctx.font = '30px "Caveat", cursive';
-    ctx.fillText("www.shanumnaysila.com", canvas.width / 2, 500);
-
-    // Create image and download
-    canvas.toBlob(function (blob) {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "kenangan-untuk-shanum.png";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      alert("Gambar berhasil dibuat dan diunduh!");
-    }, "image/png");
-  }
-
   function generateInstagramImage() {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -1868,7 +1825,7 @@ function setupSharing() {
 
     const link = document.createElement("a");
     link.href = modalImagePreview.src;
-    link.download = `instagram-kenangan-shanum-${new Date().getTime()}.png`;
+    link.download = `instagram-shanum-${new Date().getTime()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

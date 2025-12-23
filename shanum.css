@@ -207,6 +207,7 @@ html {
   transition: all 0.3s ease;
   pointer-events: none;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  overflow: visible;
 }
 
 .nav-bubble:hover .nav-tooltip {
@@ -2154,7 +2155,7 @@ section {
 
 .modal-image-container img {
   max-width: 100%;
-  max-height: 400px;
+  max-height: 350px;
   border-radius: 10px;
   border: 3px solid var(--color-light);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -2439,6 +2440,10 @@ section {
   .puzzle-difficulty {
     min-width: 100%;
     font-size: 1.2rem;
+  }
+
+  .preview-image {
+    display: none;
   }
 }
 
