@@ -39,25 +39,86 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }, 30);
 
-  // Music player functionality
+  // Music player functionality - PERBAIKAN
   let isPlaying = false;
 
-  musicPlayer.addEventListener("click", function () {
+  // Fungsi untuk toggle play/pause
+  function toggleMusic() {
     if (isPlaying) {
       bgMusic.pause();
       musicIcon.classList.remove("fa-pause");
-      musicIcon.classList.add("fa-solid fa-play");
+      musicIcon.classList.add("fa-music");
       musicPlayer.classList.remove("playing");
     } else {
-      bgMusic.play().catch((e) => {
-        console.log("Autoplay prevented. User interaction required.");
-        alert("Klik tombol musik untuk memutar lagu latar.");
-      });
-      musicIcon.classList.remove("fa-solid fa-play");
-      musicIcon.classList.add("fa-pause");
-      musicPlayer.classList.add("playing");
+      // Coba play musik, jika gagal karena autoplay policy, minta interaksi user
+      const playPromise = bgMusic.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Berhasil diputar
+            musicIcon.classList.remove("fa-music");
+            musicIcon.classList.add("fa-pause");
+            musicPlayer.classList.add("playing");
+            isPlaying = true;
+          })
+          .catch((error) => {
+            console.log("Autoplay prevented. User interaction required.");
+            // Reset state
+            musicIcon.classList.remove("fa-pause");
+            musicIcon.classList.add("fa-music");
+            musicPlayer.classList.remove("playing");
+            isPlaying = false;
+            // Beri instruksi ke user
+            alert("Klik tombol musik untuk memutar lagu latar. Jika masih tidak bisa, coba klik tombol ini sekali lagi.");
+          });
+      }
     }
-    isPlaying = !isPlaying;
+  }
+
+  // Event listener untuk tombol musik
+  musicPlayer.addEventListener("click", function (e) {
+    e.stopPropagation();
+
+    if (!isPlaying) {
+      // Jika belum playing, coba play
+      const playPromise = bgMusic.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            musicIcon.classList.remove("fa-music");
+            musicIcon.classList.add("fa-pause");
+            musicPlayer.classList.add("playing");
+            isPlaying = true;
+          })
+          .catch((error) => {
+            console.log("Autoplay error:", error);
+            // Fallback: ubah state manual karena user sudah interaksi
+            musicIcon.classList.remove("fa-music");
+            musicIcon.classList.add("fa-pause");
+            musicPlayer.classList.add("playing");
+            isPlaying = true;
+            // Coba play lagi setelah interaksi user
+            setTimeout(() => bgMusic.play(), 100);
+          });
+      }
+    } else {
+      // Jika sedang playing, pause
+      bgMusic.pause();
+      musicIcon.classList.remove("fa-pause");
+      musicIcon.classList.add("fa-music");
+      musicPlayer.classList.remove("playing");
+      isPlaying = false;
+    }
+  });
+
+  // Handle ketika musik selesai diputar
+  bgMusic.addEventListener("ended", function () {
+    musicIcon.classList.remove("fa-pause");
+    musicIcon.classList.add("fa-music");
+    musicPlayer.classList.remove("playing");
+    isPlaying = false;
   });
 
   // Preload images for galleries
