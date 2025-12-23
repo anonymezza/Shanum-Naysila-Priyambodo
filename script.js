@@ -297,20 +297,22 @@ function setupNavigation() {
   const mobileToggle = document.querySelector(".mobile-nav-toggle");
   const floatingNav = document.querySelector(".floating-nav");
 
+  // Initialize mobile nav state
+  if (window.innerWidth <= 768) {
+    floatingNav.style.display = "none";
+  }
+
   // Toggle mobile navigation
   if (mobileToggle) {
     mobileToggle.addEventListener("click", (e) => {
       e.stopPropagation();
       floatingNav.classList.toggle("active");
-      const icon = mobileToggle.querySelector("i");
+      mobileToggle.classList.toggle("active");
 
-      // Toggle icon
-      if (icon.classList.contains("fa-bars")) {
-        icon.classList.remove("fa-bars");
-        icon.classList.add("fa-times");
+      if (floatingNav.classList.contains("active")) {
+        floatingNav.style.display = "flex";
       } else {
-        icon.classList.remove("fa-times");
-        icon.classList.add("fa-bars");
+        floatingNav.style.display = "none";
       }
     });
   }
@@ -356,15 +358,25 @@ function setupNavigation() {
     closeMobileNav();
   });
 
+  // Handle window resize
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768) {
+      floatingNav.style.display = "flex";
+      floatingNav.classList.remove("active");
+      mobileToggle.classList.remove("active");
+    } else {
+      if (!floatingNav.classList.contains("active")) {
+        floatingNav.style.display = "none";
+      }
+    }
+  });
+
   // Function to close mobile navigation
   function closeMobileNav() {
     if (floatingNav.classList.contains("active")) {
       floatingNav.classList.remove("active");
-      const icon = mobileToggle.querySelector("i");
-      if (icon.classList.contains("fa-times")) {
-        icon.classList.remove("fa-times");
-        icon.classList.add("fa-bars");
-      }
+      mobileToggle.classList.remove("active");
+      floatingNav.style.display = "none";
     }
   }
 }
@@ -372,6 +384,7 @@ function setupNavigation() {
 // Fungsi untuk menutup semua modal
 function closeAllModals() {
   closeCamera();
+  closeInstagramModal();
 }
 
 // Fungsi untuk membuka kamera
@@ -397,6 +410,24 @@ function closeCamera() {
   }
 }
 
+// Fungsi untuk membuka modal Instagram
+function openInstagramModal() {
+  const modal = document.getElementById("instagram-modal");
+  if (modal) {
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+  }
+}
+
+// Fungsi untuk menutup modal Instagram
+function closeInstagramModal() {
+  const modal = document.getElementById("instagram-modal");
+  if (modal) {
+    modal.classList.remove("active");
+    document.body.style.overflow = "auto";
+  }
+}
+
 // Reset state kamera
 function resetCamera() {
   const polaroidOutput = document.getElementById("polaroid-output");
@@ -408,7 +439,7 @@ function resetCamera() {
   if (filterOptions) filterOptions.style.display = "none";
 }
 
-// Setup camera simulator dengan fitur download
+// Setup camera simulator dengan fitur download yang lengkap
 function setupCameraSimulator() {
   const cameraContainer = document.getElementById("camera-simulator");
   const shutterBtn = document.getElementById("shutter-btn");
@@ -420,18 +451,34 @@ function setupCameraSimulator() {
   const uploadPhoto = document.getElementById("upload-photo");
   const photoUpload = document.getElementById("photo-upload");
   const filterButtons = document.querySelectorAll(".filter-btn");
+  const cameraCloseBtn = document.getElementById("camera-close-btn");
+  const downloadPhotoBtn = document.getElementById("download-photo");
+  const polaroidCaption = document.getElementById("polaroid-caption");
+  const polaroidDate = document.getElementById("polaroid-date");
 
   let currentFilter = "vintage";
 
-  // Tambahkan tombol close dan download
-  addCameraCloseButton();
-  addDownloadButton();
+  // Format tanggal untuk polaroid
+  const now = new Date();
+  const formattedDate = now.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  polaroidDate.textContent = formattedDate;
 
   // Close camera when clicking outside
   cameraContainer.addEventListener("click", (e) => {
-    if (e.target === cameraContainer && !e.target.closest("#camera-close-btn")) {
+    if (e.target === cameraContainer) {
       closeCamera();
     }
+  });
+
+  // Close button
+  cameraCloseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeCamera();
+    updateActiveNavOnCameraClose();
   });
 
   // Shutter button
@@ -514,148 +561,136 @@ function setupCameraSimulator() {
     }
   });
 
-  // Fungsi untuk menambahkan tombol close
-  function addCameraCloseButton() {
-    const cameraContainer = document.getElementById("camera-simulator");
-    if (!cameraContainer) return;
+  // Download photo dengan frame polaroid lengkap
+  downloadPhotoBtn.addEventListener("click", async function (e) {
+    e.stopPropagation();
 
-    // Hapus tombol close lama jika ada
-    const existingCloseBtn = document.getElementById("camera-close-btn");
-    if (existingCloseBtn) {
-      existingCloseBtn.remove();
+    if (!capturedPhoto.src || capturedPhoto.src === "") {
+      alert("Tidak ada foto untuk diunduh. Ambil foto terlebih dahulu!");
+      return;
     }
 
-    // Buat tombol close baru
-    const closeBtn = document.createElement("button");
-    closeBtn.id = "camera-close-btn";
-    closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-    closeBtn.style.position = "absolute";
-    closeBtn.style.top = "15px";
-    closeBtn.style.right = "15px";
-    closeBtn.style.width = "40px";
-    closeBtn.style.height = "40px";
-    closeBtn.style.borderRadius = "50%";
-    closeBtn.style.backgroundColor = "var(--color-red)";
-    closeBtn.style.color = "white";
-    closeBtn.style.border = "none";
-    closeBtn.style.fontSize = "1.2rem";
-    closeBtn.style.cursor = "pointer";
-    closeBtn.style.zIndex = "1002";
-    closeBtn.style.display = "flex";
-    closeBtn.style.justifyContent = "center";
-    closeBtn.style.alignItems = "center";
-    closeBtn.style.boxShadow = "0 3px 10px rgba(0,0,0,0.3)";
-    closeBtn.style.transition = "all 0.3s ease";
+    // Tampilkan loading
+    const originalHTML = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    this.disabled = true;
 
-    closeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      closeCamera();
-      updateActiveNavOnCameraClose();
-    });
+    try {
+      // Buat canvas untuk gambar dengan frame polaroid
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-    closeBtn.addEventListener("mouseenter", function () {
-      this.style.backgroundColor = "var(--color-pink)";
-      this.style.transform = "scale(1.1)";
-    });
+      // Ukuran canvas untuk polaroid
+      canvas.width = 800;
+      canvas.height = 1000;
 
-    closeBtn.addEventListener("mouseleave", function () {
-      this.style.backgroundColor = "var(--color-red)";
-      this.style.transform = "scale(1)";
-    });
+      // Background putih untuk polaroid
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    cameraContainer.appendChild(closeBtn);
-  }
+      // Gambar border polaroid
+      ctx.strokeStyle = "#E0E0E0";
+      ctx.lineWidth = 20;
+      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-  // Fungsi untuk menambahkan tombol download
-  function addDownloadButton() {
-    const cameraControls = document.querySelector(".camera-controls");
-    if (!cameraControls) return;
+      // Tambah border dalam
+      ctx.strokeStyle = "#CCCCCC";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
 
-    // Cek apakah sudah ada tombol download
-    if (!document.getElementById("download-photo")) {
-      const downloadBtn = document.createElement("button");
-      downloadBtn.id = "download-photo";
-      downloadBtn.className = "camera-control-btn";
-      downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
-
-      downloadBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-
-        if (!capturedPhoto.src || capturedPhoto.src === "") {
-          alert("Tidak ada foto untuk diunduh. Ambil foto terlebih dahulu!");
-          return;
-        }
-
-        // Tampilkan loading
-        const originalText = downloadBtn.innerHTML;
-        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-        downloadBtn.disabled = true;
-
-        // Buat canvas untuk gambar
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        // Tunggu gambar selesai load
+      // Tunggu gambar selesai load
+      await new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.src = capturedPhoto.src;
 
         img.onload = function () {
-          // Set ukuran canvas
-          canvas.width = img.width;
-          canvas.height = img.height;
+          // Apply filter ke gambar
+          const tempCanvas = document.createElement("canvas");
+          const tempCtx = tempCanvas.getContext("2d");
+          tempCanvas.width = img.width;
+          tempCanvas.height = img.height;
 
-          // Terapkan filter ke canvas
-          ctx.filter = capturedPhoto.style.filter;
-          ctx.drawImage(img, 0, 0);
+          // Terapkan filter sesuai pilihan
+          tempCtx.filter = capturedPhoto.style.filter || "sepia(0.3) contrast(1.1) brightness(1.05)";
+          tempCtx.drawImage(img, 0, 0);
+
+          // Gambar foto di tengah dengan border
+          const photoX = 100;
+          const photoY = 100;
+          const photoWidth = 600;
+          const photoHeight = 600;
+
+          // Gambar shadow untuk foto
+          ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+          ctx.shadowBlur = 20;
+          ctx.shadowOffsetX = 5;
+          ctx.shadowOffsetY = 5;
+
+          // Gambar foto
+          ctx.drawImage(tempCanvas, 0, 0, img.width, img.height, photoX, photoY, photoWidth, photoHeight);
+
+          // Reset shadow
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Gambar border foto
+          ctx.strokeStyle = "#888888";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(photoX, photoY, photoWidth, photoHeight);
 
           // Tambah teks caption
-          ctx.font = '24px "Caveat", cursive';
-          ctx.fillStyle = "#333";
+          ctx.fillStyle = "#333333";
+          ctx.font = 'bold 48px "Caveat", cursive';
           ctx.textAlign = "center";
-          ctx.fillText("Classic Memory", canvas.width / 2, canvas.height - 30);
+          ctx.fillText(polaroidCaption.textContent, canvas.width / 2, 750);
 
-          // Convert to blob dan download
-          canvas.toBlob(function (blob) {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `shanum-naysila-${new Date().getTime()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+          // Tambah teks tanggal
+          ctx.font = 'italic 36px "Caveat", cursive';
+          ctx.fillStyle = "#666666";
+          ctx.fillText(polaroidDate.textContent, canvas.width / 2, 820);
 
-            // Cleanup
-            setTimeout(() => URL.revokeObjectURL(url), 100);
+          // Tambah watermark
+          ctx.font = '24px "Caveat", cursive';
+          ctx.fillStyle = "#888888";
+          ctx.fillText("Kenangan Indah untuk Shanum", canvas.width / 2, 920);
 
-            // Reset tombol
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
-
-            alert("Foto berhasil diunduh!");
-          }, "image/png");
+          resolve();
         };
 
         img.onerror = function () {
-          // Fallback: download gambar langsung
-          const link = document.createElement("a");
-          link.href = capturedPhoto.src;
-          link.download = `shanum-naysila-${new Date().getTime()}.jpg`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          // Reset tombol
-          downloadBtn.innerHTML = originalText;
-          downloadBtn.disabled = false;
-
-          alert("Foto berhasil diunduh!");
+          console.error("Gagal memuat gambar untuk download");
+          alert("Gagal memuat gambar. Coba lagi.");
+          resolve();
         };
       });
 
-      cameraControls.appendChild(downloadBtn);
+      // Convert to blob dan download
+      canvas.toBlob(function (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `kenangan-shanum-${new Date().getTime()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Cleanup
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+
+        alert("Foto dengan frame polaroid berhasil diunduh!");
+      }, "image/png");
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      alert("Terjadi kesalahan saat mengunduh gambar.");
+    } finally {
+      // Reset tombol
+      downloadPhotoBtn.innerHTML = originalHTML;
+      downloadPhotoBtn.disabled = false;
     }
-  }
+  });
 
   // Apply filter to image
   function applyFilter(imgElement, filterName) {
@@ -704,7 +739,7 @@ function updateActiveNavOnCameraClose() {
   });
 }
 
-// Setup puzzle game
+// Setup puzzle game dengan perbaikan responsive
 function setupPuzzleGame() {
   const puzzleBoard = document.getElementById("puzzle-board");
   const shuffleBtn = document.getElementById("shuffle-puzzle");
@@ -895,6 +930,10 @@ function setupPuzzleGame() {
     function createPuzzlePieces(imageUrl, shuffle) {
       emptyIndex = 8;
 
+      // Dapatkan ukuran puzzle board
+      const boardSize = puzzleBoard.clientWidth;
+      const pieceSize = boardSize / 3;
+
       for (let i = 0; i < 9; i++) {
         const piece = document.createElement("div");
         piece.className = "puzzle-piece";
@@ -907,8 +946,8 @@ function setupPuzzleGame() {
           const row = Math.floor(i / 3);
           const col = i % 3;
           piece.style.backgroundImage = `url('${imageUrl}')`;
-          piece.style.backgroundPosition = `-${col * 167}px -${row * 167}px`;
-          piece.style.backgroundSize = "500px 500px";
+          piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
+          piece.style.backgroundSize = `${boardSize}px ${boardSize}px`;
 
           const numberDiv = document.createElement("div");
           numberDiv.className = "puzzle-number";
@@ -1145,6 +1184,24 @@ function setupPuzzleGame() {
       };
     }
   }
+
+  // Handle responsive puzzle size on window resize
+  window.addEventListener("resize", () => {
+    if (puzzlePieces.length > 0 && puzzleBoard.children.length > 0) {
+      // Update background size for all pieces
+      const boardSize = puzzleBoard.clientWidth;
+      const pieceSize = boardSize / 3;
+
+      Array.from(puzzleBoard.children).forEach((piece, i) => {
+        if (!piece.classList.contains("empty")) {
+          const row = Math.floor(i / 3);
+          const col = i % 3;
+          piece.style.backgroundSize = `${boardSize}px ${boardSize}px`;
+          piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
+        }
+      });
+    }
+  });
 }
 
 // Setup music player
@@ -1324,14 +1381,14 @@ function setupTimeCapsule() {
     const capsuleItem = document.createElement("div");
     capsuleItem.className = "sealed-capsule-item";
     capsuleItem.innerHTML = `
-      <div>
-        <div class="sealed-capsule-date">${formatDate(capsule.date)}</div>
-        <div class="sealed-capsule-preview">${capsule.message.substring(0, 80)}...</div>
-      </div>
-      <button class="capsule-open-btn" data-id="${capsule.id}">
-        <i class="fas fa-unlock"></i>
-      </button>
-    `;
+            <div>
+                <div class="sealed-capsule-date">${formatDate(capsule.date)}</div>
+                <div class="sealed-capsule-preview">${capsule.message.substring(0, 80)}...</div>
+            </div>
+            <button class="capsule-open-btn" data-id="${capsule.id}">
+                <i class="fas fa-unlock"></i>
+            </button>
+        `;
 
     sealedCapsules.appendChild(capsuleItem);
 
@@ -1482,9 +1539,9 @@ function setupCountdown() {
     const wishItem = document.createElement("div");
     wishItem.className = "wish-item";
     wishItem.innerHTML = `
-      <div class="wish-text">${wish.text}</div>
-      <div class="wish-date">${wish.date}</div>
-    `;
+            <div class="wish-text">${wish.text}</div>
+            <div class="wish-date">${wish.date}</div>
+        `;
 
     wishesWall.appendChild(wishItem);
   }
@@ -1493,12 +1550,21 @@ function setupCountdown() {
   loadWishes();
 }
 
-// Setup sharing
+// Setup sharing dengan fitur Instagram yang lengkap
 function setupSharing() {
   const shareButtons = document.querySelectorAll(".share-option-btn");
   const copyLinkBtn = document.getElementById("copy-link");
   const colorOptions = document.querySelectorAll(".color-option");
-  const generateImageBtn = document.getElementById("generate-image");
+  const shareToInstagramBtn = document.getElementById("share-to-instagram");
+  const instagramModal = document.getElementById("instagram-modal");
+  const modalCloseBtn = document.getElementById("modal-close");
+  const saveInstagramImageBtn = document.getElementById("save-instagram-image");
+  const copyInstagramCaptionBtn = document.getElementById("copy-instagram-caption");
+  const modalImagePreview = document.getElementById("modal-image-preview");
+  const previewCard = document.getElementById("preview-card");
+  const sharePreviewImage = document.getElementById("share-preview-image");
+  const sharePreviewTitle = document.getElementById("share-preview-title");
+  const sharePreviewContent = document.getElementById("share-preview-desc");
 
   // Share buttons
   shareButtons.forEach((btn) => {
@@ -1521,14 +1587,18 @@ function setupSharing() {
             shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             break;
           case "instagram":
-            alert("Salin tautan dan bagikan di Instagram!");
+            // Untuk Instagram, buka modal khusus
+            openInstagramModal();
+            generateInstagramImage();
             return;
           case "pinterest":
             shareUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(text)}`;
             break;
         }
 
-        window.open(shareUrl, "_blank", "width=600,height=400");
+        if (shareUrl) {
+          window.open(shareUrl, "_blank", "width=600,height=400");
+        }
       });
     }
   });
@@ -1560,18 +1630,53 @@ function setupSharing() {
       this.classList.add("active");
 
       const color = this.dataset.color;
-      const previewCard = document.querySelector(".preview-card");
+      const titleColor = this.dataset.titleColor;
+      const bgColor = this.dataset.bgColor;
+
+      // Update preview card styling
       if (previewCard) {
         previewCard.style.borderColor = color;
+        previewCard.style.backgroundColor = bgColor;
+      }
+
+      if (sharePreviewTitle) {
+        sharePreviewTitle.style.color = titleColor;
+      }
+
+      if (sharePreviewContent) {
+        sharePreviewContent.style.color = titleColor;
       }
     });
   });
 
-  // Generate image for sharing
-  if (generateImageBtn) {
-    generateImageBtn.addEventListener("click", () => {
-      generateShareImage();
+  // Share to Instagram button
+  if (shareToInstagramBtn) {
+    shareToInstagramBtn.addEventListener("click", () => {
+      openInstagramModal();
+      generateInstagramImage();
     });
+  }
+
+  // Close modal button
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener("click", closeInstagramModal);
+  }
+
+  // Close modal when clicking outside
+  instagramModal.addEventListener("click", (e) => {
+    if (e.target === instagramModal) {
+      closeInstagramModal();
+    }
+  });
+
+  // Save Instagram image
+  if (saveInstagramImageBtn) {
+    saveInstagramImageBtn.addEventListener("click", saveInstagramImage);
+  }
+
+  // Copy Instagram caption
+  if (copyInstagramCaptionBtn) {
+    copyInstagramCaptionBtn.addEventListener("click", copyInstagramCaption);
   }
 
   function generateShareImage() {
@@ -1614,7 +1719,183 @@ function setupSharing() {
       URL.revokeObjectURL(url);
 
       alert("Gambar berhasil dibuat dan diunduh!");
-    });
+    }, "image/png");
+  }
+
+  function generateInstagramImage() {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Instagram optimal size: 1080x1080 for square, 1080x1350 for portrait
+    canvas.width = 1080;
+    canvas.height = 1350;
+
+    // Get active color option
+    const activeColorOption = document.querySelector(".color-option.active");
+    const bgColor = activeColorOption?.dataset.bgColor || "#FFFFFF";
+    const titleColor = activeColorOption?.dataset.titleColor || "#E26868";
+    const borderColor = activeColorOption?.dataset.color || "#FF8787";
+
+    // Background
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Border
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 20;
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+    // Decorative elements
+    ctx.fillStyle = `${borderColor}20`; // 20% opacity
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, 300, 200, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Title
+    ctx.fillStyle = titleColor;
+    ctx.font = 'bold 60px "Dancing Script", cursive';
+    ctx.textAlign = "center";
+    ctx.fillText("Kenangan Indah", canvas.width / 2, 200);
+
+    ctx.font = 'bold 50px "Dancing Script", cursive';
+    ctx.fillText("untuk Shanum", canvas.width / 2, 270);
+
+    // Load preview image
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = sharePreviewImage.src;
+
+    img.onload = function () {
+      // Draw image with rounded corners
+      const imageX = 140;
+      const imageY = 350;
+      const imageWidth = 800;
+      const imageHeight = 600;
+
+      // Create clipping path for rounded corners
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(imageX, imageY, imageWidth, imageHeight, 30);
+      ctx.clip();
+
+      ctx.drawImage(img, 0, 0, img.width, img.height, imageX, imageY, imageWidth, imageHeight);
+      ctx.restore();
+
+      // Add image border
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.roundRect(imageX, imageY, imageWidth, imageHeight, 30);
+      ctx.stroke();
+
+      // Add decorative elements
+      ctx.fillStyle = `${borderColor}30`;
+      ctx.beginPath();
+      ctx.arc(canvas.width - 150, 100, 50, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(150, canvas.height - 100, 40, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Add message
+      ctx.fillStyle = titleColor;
+      ctx.font = 'italic 36px "Playfair Display", serif';
+      ctx.textAlign = "center";
+
+      const message = "Kumpulan kenangan dan pesan spesial untuk seseorang yang sangat berarti";
+      wrapText(ctx, message, canvas.width / 2, 1000, 900, 40);
+
+      // Add URL
+      ctx.font = '28px "Caveat", cursive';
+      ctx.fillStyle = "#666666";
+      ctx.fillText("www.shanumnaysila.com", canvas.width / 2, 1150);
+
+      // Add hashtags
+      ctx.font = 'bold 32px "Caveat", cursive';
+      ctx.fillStyle = borderColor;
+      ctx.fillText("#KenanganIndah #Shanum #Cinta #Memories", canvas.width / 2, 1250);
+
+      // Set modal image preview
+      modalImagePreview.src = canvas.toDataURL("image/png");
+    };
+
+    img.onerror = function () {
+      // Fallback if image fails to load
+      ctx.fillStyle = borderColor;
+      ctx.font = '40px "Caveat", cursive';
+      ctx.textAlign = "center";
+      ctx.fillText("🎀 Kenangan Spesial 🎀", canvas.width / 2, 500);
+
+      modalImagePreview.src = canvas.toDataURL("image/png");
+    };
+  }
+
+  function wrapText(context, text, x, y, maxWidth, lineHeight) {
+    const words = text.split(" ");
+    let line = "";
+    let testLine = "";
+    let lineCount = 0;
+
+    for (let n = 0; n < words.length; n++) {
+      testLine = line + words[n] + " ";
+      const metrics = context.measureText(testLine);
+      const testWidth = metrics.width;
+
+      if (testWidth > maxWidth && n > 0) {
+        context.fillText(line, x, y);
+        line = words[n] + " ";
+        y += lineHeight;
+        lineCount++;
+
+        // Max 3 lines
+        if (lineCount >= 3) {
+          context.fillText(line + "...", x, y);
+          return;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+    context.fillText(line, x, y);
+  }
+
+  function saveInstagramImage() {
+    if (!modalImagePreview.src) {
+      alert("Gambar belum siap. Silakan tunggu sebentar.");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = modalImagePreview.src;
+    link.download = `instagram-kenangan-shanum-${new Date().getTime()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    alert("Gambar Instagram berhasil disimpan!");
+  }
+
+  function copyInstagramCaption() {
+    const caption = `✨ Kenangan Indah untuk Shanum ✨
+
+Kumpulan kenangan dan pesan spesial untuk seseorang yang sangat berarti 💖
+
+Jelajahi website spesial ini untuk melihat lebih banyak kenangan indah!
+
+🔗 www.shanumnaysila.com
+
+#KenanganIndah #Shanum #Cinta #Memories #SpecialMoments #Love #BeautifulMemories`;
+
+    navigator.clipboard
+      .writeText(caption)
+      .then(() => {
+        alert("Caption Instagram berhasil disalin! 🎉");
+      })
+      .catch((err) => {
+        console.error("Failed to copy caption: ", err);
+        alert("Gagal menyalin caption. Silakan salin manual.");
+      });
   }
 }
 
@@ -1639,4 +1920,20 @@ function preloadGalleryImages() {
     const img = new Image();
     img.src = url;
   });
+}
+
+// Tambahkan roundedRect ke CanvasRenderingContext2D
+if (CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
+    if (width < 2 * radius) radius = width / 2;
+    if (height < 2 * radius) radius = height / 2;
+    this.beginPath();
+    this.moveTo(x + radius, y);
+    this.arcTo(x + width, y, x + width, y + height, radius);
+    this.arcTo(x + width, y + height, x, y + height, radius);
+    this.arcTo(x, y + height, x, y, radius);
+    this.arcTo(x, y, x + width, y, radius);
+    this.closePath();
+    return this;
+  };
 }
