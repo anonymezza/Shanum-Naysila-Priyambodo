@@ -1745,8 +1745,8 @@ function setupSharing() {
     const ctx = canvas.getContext("2d");
 
     // Instagram optimal size: 1080x1080 for square, 1080x1350 for portrait
-    canvas.width = 1080;
-    canvas.height = 1350;
+    canvas.width = 880;
+    canvas.height = 1150;
 
     // Get active color option
     const activeColorOption = document.querySelector(".color-option.active");
@@ -1785,10 +1785,10 @@ function setupSharing() {
 
     img.onload = function () {
       // Draw image with rounded corners
-      const imageX = 140;
+      const imageX = 270;
       const imageY = 350;
-      const imageWidth = 800;
-      const imageHeight = 600;
+      const imageWidth = 350;
+      const imageHeight = 500;
 
       // Create clipping path for rounded corners
       ctx.save();
@@ -1822,17 +1822,17 @@ function setupSharing() {
       ctx.textAlign = "center";
 
       const message = "Kumpulan kenangan dan pesan spesial untuk seseorang yang sangat berarti";
-      wrapText(ctx, message, canvas.width / 2, 1000, 900, 40);
+      wrapText(ctx, message, canvas.width / 2, 1000, 700, 40);
 
       // Add URL
       ctx.font = '28px "Caveat", cursive';
       ctx.fillStyle = "#666666";
-      ctx.fillText("www.shanumnaysila.com", canvas.width / 2, 1150);
+      ctx.fillText("https://shanumnaysilapriyambodo.netlify.app/", canvas.width / 2, 930);
 
       // Add hashtags
       ctx.font = 'bold 32px "Caveat", cursive';
       ctx.fillStyle = borderColor;
-      ctx.fillText("#KenanganIndah #Shanum #Cinta #Memories", canvas.width / 2, 1250);
+      ctx.fillText("#KenanganIndah #Shanum #Lovely #Memories", canvas.width / 2, 1100);
 
       // Set modal image preview
       modalImagePreview.src = canvas.toDataURL("image/png");
@@ -1843,7 +1843,7 @@ function setupSharing() {
       ctx.fillStyle = borderColor;
       ctx.font = '40px "Caveat", cursive';
       ctx.textAlign = "center";
-      ctx.fillText("🎀 Kenangan Spesial 🎀", canvas.width / 2, 500);
+      ctx.fillText("🎀 Shanum Naysila 🎀", canvas.width / 2, 500);
 
       modalImagePreview.src = canvas.toDataURL("image/png");
     };

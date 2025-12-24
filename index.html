@@ -261,11 +261,20 @@
         <p class="section-subtitle animate-on-scroll fade-in-down">Koleksi lagu yang mengingatkan pada momen indah</p>
 
         <div class="music-player-large animate-on-scroll fade-in-left">
-          <div class="album-cover animate-on-scroll scale-in">
+          <!-- PERBAIKAN: Hapus class scale-in dan letakkan tonearm & glow di DALAM album-cover -->
+          <div class="album-cover">
             <img src="Assets/img/guitar.jpg" alt="Album Cover" />
+
+            <!-- VINYL -->
             <div class="vinyl-record">
               <div class="vinyl-center"></div>
             </div>
+
+            <!-- JARUM PEMUTAR VINYL -->
+            <div class="tonearm"></div>
+
+            <!-- EFEK CAHAYA -->
+            <div class="vinyl-glow"></div>
           </div>
 
           <div class="player-controls animate-on-scroll fade-in-right">
@@ -465,13 +474,13 @@
               <i class="fab fa-twitter"></i>
               <span>Twitter</span>
             </button>
-            <button class="share-option-btn animate-on-scroll fade-in-up" data-platform="instagram">
-              <i class="fab fa-instagram"></i>
-              <span>Instagram</span>
-            </button>
             <button class="share-option-btn animate-on-scroll fade-in-up" data-platform="pinterest">
               <i class="fab fa-pinterest"></i>
               <span>Pinterest</span>
+            </button>
+            <button class="share-option-btn animate-on-scroll fade-in-up" data-platform="instagram">
+              <i class="fab fa-instagram"></i>
+              <span>Instagram</span>
             </button>
             <button class="share-option-btn animate-on-scroll fade-in-up" id="copy-link">
               <i class="fas fa-link"></i>
@@ -529,8 +538,8 @@
                   <img id="modal-image-preview" src="" alt="Preview untuk Instagram" />
                 </div>
                 <div class="modal-actions">
-                  <button id="save-instagram-image"><i class="fas fa-download"></i> Simpan Gambar</button>
-                  <button id="copy-instagram-caption"><i class="fas fa-copy"></i> Salin Caption</button>
+                  <button id="save-instagram-image"><i class="fas fa-download"></i></button>
+                  <button id="copy-instagram-caption"><i class="fas fa-copy"></i></button>
                 </div>
               </div>
             </div>
