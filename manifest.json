@@ -1,0 +1,80 @@
+{
+  "name": "Kenangan untuk Shanum",
+  "short_name": "Shanum",
+  "description": "Website kenangan spesial untuk Shanum Naysila",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#d8d9cf",
+  "theme_color": "#e26868",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "favicon/favicon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon/favicon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lihat Kapsul Waktu",
+      "short_name": "Kapsul",
+      "description": "Buka kapsul waktu yang disegel",
+      "url": "/#timecapsule",
+      "icons": [{ "src": "favicon/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Kirim Ucapan",
+      "short_name": "Ucapan",
+      "description": "Kirim ucapan untuk Shanum",
+      "url": "/#countdown",
+      "icons": [{ "src": "favicon/favicon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "categories": ["entertainment", "lifestyle", "social"],
+  "screenshots": [
+    {
+      "src": "Assets/img/screenshot1.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Halaman Utama"
+    }
+  ]
+}

@@ -642,8 +642,8 @@ function setupCameraSimulator() {
       const ctx = canvas.getContext("2d");
 
       // Ukuran canvas untuk polaroid
-      canvas.width = 800;
-      canvas.height = 1000;
+      canvas.width = 600;
+      canvas.height = 800;
 
       // Background putih untuk polaroid
       ctx.fillStyle = "#FFFFFF";
@@ -677,10 +677,10 @@ function setupCameraSimulator() {
           tempCtx.drawImage(img, 0, 0);
 
           // Gambar foto di tengah dengan border
-          const photoX = 100;
-          const photoY = 100;
-          const photoWidth = 600;
-          const photoHeight = 600;
+          const photoX = 50;
+          const photoY = 50;
+          const photoWidth = 500;
+          const photoHeight = 500;
 
           // Gambar shadow untuk foto
           ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
@@ -1901,7 +1901,7 @@ Kumpulan kenangan dan pesan spesial untuk seseorang yang sangat berarti 💖
 
 Jelajahi website spesial ini untuk melihat lebih banyak kenangan indah!
 
-🔗 www.shanumnaysila.com
+🔗 https://shanumnaysilapriyambodo.netlify.app/
 
 #KenanganIndah #Shanum #Cinta #Memories #SpecialMoments #Love #BeautifulMemories`;
 
@@ -1955,3 +1955,297 @@ if (CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.roundRect) {
     return this;
   };
 }
+
+// ============================
+// NOTIFIKASI SYSTEM (FINAL)
+// ============================
+
+const websiteNotifier = {
+  permission: Notification.permission,
+  scheduledNotifications: new Set(),
+
+  init() {
+    console.log("🔔 Notifikasi system initialized");
+    this.scheduledNotifications.clear();
+
+    // Request permission saat user klik
+    const requestPermission = () => {
+      if (this.permission === "default") {
+        this.requestPermission()
+          .then(() => {
+            console.log("✅ Permission granted");
+            this.scheduleAllNotifications();
+          })
+          .catch((err) => {
+            console.warn("Permission denied:", err);
+          });
+      }
+    };
+
+    document.addEventListener("click", requestPermission, { once: true });
+
+    // Cek notifikasi saat ini
+    this.checkScheduledNotifications();
+
+    // Schedule untuk masa depan
+    this.scheduleAllNotifications();
+
+    return this;
+  },
+
+  requestPermission() {
+    return Notification.requestPermission().then((permission) => {
+      this.permission = permission;
+      localStorage.setItem("notifPermission", permission);
+      console.log("Notification permission:", permission);
+      return permission;
+    });
+  },
+
+  send(title, options = {}) {
+    if (this.permission !== "granted") {
+      console.warn("Cannot send notification: permission not granted");
+      return false;
+    }
+
+    try {
+      const notif = new Notification(title, {
+        icon: "favicon/favicon-192x192.png",
+        badge: "favicon/favicon-32x32.png",
+        vibrate: [200, 100, 200],
+        ...options,
+      });
+
+      // Click handler - scroll ke section yang sesuai
+      notif.onclick = () => {
+        window.focus();
+
+        // Navigate berdasarkan tag
+        if (options.tag && options.tag.includes("capsule")) {
+          const section = document.getElementById("timecapsule");
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+
+            // Highlight capsules section
+            setTimeout(() => {
+              const sealedCapsules = document.querySelector(".sealed-capsules");
+              if (sealedCapsules) {
+                sealedCapsules.style.backgroundColor = "rgba(255, 135, 135, 0.1)";
+                sealedCapsules.style.border = "2px solid #ff8787";
+                setTimeout(() => {
+                  sealedCapsules.style.backgroundColor = "";
+                  sealedCapsules.style.border = "";
+                }, 3000);
+              }
+            }, 500);
+          }
+        } else if (options.tag && options.tag.includes("birthday")) {
+          const section = document.getElementById("countdown");
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+
+            // Highlight wish input
+            setTimeout(() => {
+              const wishInput = document.getElementById("birthday-wish");
+              if (wishInput) {
+                wishInput.focus();
+                wishInput.style.borderColor = "#ff8787";
+                wishInput.style.boxShadow = "0 0 10px rgba(255, 135, 135, 0.5)";
+                setTimeout(() => {
+                  wishInput.style.borderColor = "";
+                  wishInput.style.boxShadow = "";
+                }, 3000);
+              }
+            }, 500);
+          }
+        }
+
+        notif.close();
+      };
+
+      // Auto close setelah 8 detik
+      setTimeout(() => {
+        if (notif.close) notif.close();
+      }, 8000);
+
+      console.log("✅ Notification sent:", title);
+      return true;
+    } catch (error) {
+      console.error("❌ Error sending notification:", error);
+      return false;
+    }
+  },
+
+  scheduleNotification(title, body, targetDate, tag = "") {
+    // Cegah duplicate
+    const scheduleKey = `${title}-${targetDate.getTime()}-${tag}`;
+    if (this.scheduledNotifications.has(scheduleKey)) {
+      console.log(`⏩ Skip duplicate: ${title}`);
+      return false;
+    }
+
+    const now = new Date();
+    const timeUntil = targetDate.getTime() - now.getTime();
+
+    // Hanya schedule jika di masa depan dan maksimal 30 hari
+    if (timeUntil > 0 && timeUntil < 30 * 24 * 60 * 60 * 1000) {
+      console.log(`⏰ Scheduling: ${title} for ${targetDate.toLocaleDateString()}`);
+
+      this.scheduledNotifications.add(scheduleKey);
+
+      setTimeout(() => {
+        this.send(title, { body, tag });
+        this.scheduledNotifications.delete(scheduleKey);
+      }, timeUntil);
+
+      return true;
+    }
+    return false;
+  },
+
+  scheduleAllNotifications() {
+    console.log("📅 Scheduling all notifications...");
+    // Schedule birthday notifications
+    this.scheduleBirthdayNotifications();
+    // Schedule capsule notifications
+    this.scheduleCapsuleNotifications();
+  },
+
+  scheduleCapsuleNotifications() {
+    try {
+      const capsules = JSON.parse(localStorage.getItem("timeCapsules") || "[]");
+      console.log(`📦 Found ${capsules.length} capsules`);
+
+      capsules.forEach((capsule, index) => {
+        const openDate = new Date(capsule.date);
+
+        // Notifikasi saat kapsul terbuka
+        this.scheduleNotification("🎁 Kapsul Waktu Terbuka!", `"${capsule.message.substring(0, 50)}${capsule.message.length > 50 ? "..." : ""}" siap dibaca!`, openDate, `capsule-open-${index}`);
+
+        // Reminder 1 hari sebelumnya
+        const reminderDate = new Date(openDate);
+        reminderDate.setDate(reminderDate.getDate() - 1);
+        this.scheduleNotification("⏳ Kapsul Besok Terbuka", `Pesan dari ${this.formatDate(capsule.date)} akan terbuka besok!`, reminderDate, `capsule-reminder-${index}`);
+      });
+    } catch (error) {
+      console.error("Error scheduling capsules:", error);
+    }
+  },
+
+  scheduleBirthdayNotifications() {
+    try {
+      const today = new Date();
+      const currentYear = today.getFullYear();
+
+      // Ulang tahun Shanum: 12 April
+      let birthday = new Date(currentYear, 3, 12);
+
+      // Jika sudah lewat tahun ini, schedule untuk tahun depan
+      if (today > birthday) {
+        birthday.setFullYear(currentYear + 1);
+      }
+
+      // Notifikasi H-0
+      this.scheduleNotification("🎉 HAPPY BIRTHDAY SHANUM!", "Hari ini hari spesial! Kirimkan ucapanmu! 🎂", birthday, "birthday-today");
+
+      // Reminder H-7
+      const weekBefore = new Date(birthday);
+      weekBefore.setDate(weekBefore.getDate() - 7);
+      this.scheduleNotification("⏳ 1 Minggu Lagi!", "7 hari lagi ulang tahun Shanum!", weekBefore, "birthday-week");
+
+      // Reminder H-1
+      const dayBefore = new Date(birthday);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      this.scheduleNotification("⏳ Besok Spesial!", "Besok ulang tahun Shanum! Siapkan ucapan!", dayBefore, "birthday-tomorrow");
+    } catch (error) {
+      console.error("Error scheduling birthday:", error);
+    }
+  },
+
+  checkScheduledNotifications() {
+    const today = new Date();
+
+    // Cek kapsul yang terbuka hari ini
+    try {
+      const capsules = JSON.parse(localStorage.getItem("timeCapsules") || "[]");
+      capsules.forEach((capsule) => {
+        const openDate = new Date(capsule.date);
+        if (openDate.toDateString() === today.toDateString()) {
+          this.send("🎁 Kapsul Hari Ini Terbuka!", {
+            body: `"${capsule.message.substring(0, 50)}${capsule.message.length > 50 ? "..." : ""}" siap dibaca!`,
+            tag: "capsule-today",
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Error checking capsules:", error);
+    }
+
+    // Cek jika hari ini ulang tahun
+    if (today.getMonth() === 3 && today.getDate() === 12) {
+      this.send("🎉 HARI INI ULANG TAHUN SHANUM!", {
+        body: "Kirimkan ucapan spesial di website ini! 🎂",
+        vibrate: [500, 200, 500],
+        tag: "birthday-today",
+      });
+    }
+  },
+
+  formatDate(dateStr) {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch (error) {
+      return dateStr;
+    }
+  },
+
+  onCapsuleSealed(date, messagePreview) {
+    this.send("🔒 Kapsul Waktu Disegel", {
+      body: `Akan terbuka pada ${this.formatDate(date)}\n"${messagePreview}..."`,
+      tag: "capsule-sealed",
+    });
+
+    // Juga schedule notifikasi untuk tanggal buka
+    const openDate = new Date(date);
+    this.scheduleNotification("🎁 Kapsul Waktu Terbuka!", `"${messagePreview}..." siap dibaca!`, openDate, `capsule-open-${Date.now()}`);
+  },
+};
+
+// Integrasi dengan time capsule system
+function integrateWithTimeCapsule() {
+  const sealBtn = document.getElementById("seal-capsule");
+  if (!sealBtn) {
+    console.warn("Tombol seal capsule tidak ditemukan!");
+    return;
+  }
+
+  // Tambahkan event listener
+  sealBtn.addEventListener("click", function () {
+    // Tunggu 300ms untuk pastikan data tersimpan
+    setTimeout(() => {
+      const dateInput = document.getElementById("open-date");
+      const messageInput = document.getElementById("capsule-input");
+
+      if (dateInput && dateInput.value && messageInput && messageInput.value.trim()) {
+        websiteNotifier.onCapsuleSealed(dateInput.value, messageInput.value.substring(0, 50));
+        console.log("📨 Notifikasi kapsul terkirim");
+      }
+    }, 300);
+  });
+}
+
+// Initialize
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("🚀 Initializing notification system...");
+
+  // Initialize notifier
+  websiteNotifier.init();
+
+  // Setup integration
+  integrateWithTimeCapsule();
+});
