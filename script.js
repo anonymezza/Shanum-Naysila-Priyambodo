@@ -827,7 +827,7 @@ function setupPuzzleGame() {
     {
       id: 1,
       name: "Gambar 1 - Shanum",
-      url: "Assets/img/1.jpeg",
+      url: "Assets/img/4.jpeg",
       fallback: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
     },
     {
@@ -839,7 +839,7 @@ function setupPuzzleGame() {
     {
       id: 3,
       name: "Gambar 3 - Priyambodo",
-      url: "Assets/img/4.jpeg",
+      url: "Assets/img/1.jpeg",
       fallback: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
     },
   ];
